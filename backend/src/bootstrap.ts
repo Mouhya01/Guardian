@@ -32,7 +32,8 @@ export async function bootstrap(): Promise<void> {
     .setDescription(
       'AI-powered security auditing platform — vulnerability analysis, secret detection and remediation reporting.',
     )
-    .setVersion('0.1.0')
+    .setVersion('0.2.0')
+    .addTag('audit', 'Multi-file upload and Gemini-powered security analysis')
     .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, swaggerConfig);
