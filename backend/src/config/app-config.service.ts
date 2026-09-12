@@ -54,4 +54,24 @@ export class AppConfigService {
   get auditMaxTotalPayloadBytes(): number {
     return parseIntEnv(this.config.get<string>('AUDIT_MAX_TOTAL_PAYLOAD_BYTES'), 20 * 1024 * 1024);
   }
+
+  get globalRateLimitWindowMs(): number {
+    return parseIntEnv(this.config.get<string>('RATE_LIMIT_WINDOW_MS'), 15 * 60 * 1000);
+  }
+
+  get globalRateLimitMaxRequests(): number {
+    return parseIntEnv(this.config.get<string>('RATE_LIMIT_MAX_REQUESTS'), 100);
+  }
+
+  /** Origins allowed to call this API cross-origin — the Next.js frontend in dev/prod. */
+  get corsAllowedOrigins(): string[] {
+    const raw = this.config.get<string>('CORS_ALLOWED_ORIGINS');
+    if (!raw || raw.trim().length === 0) {
+      return ['http://localhost:3001'];
+    }
+    return raw
+      .split(',')
+      .map((origin) => origin.trim())
+      .filter((origin) => origin.length > 0);
+  }
 }

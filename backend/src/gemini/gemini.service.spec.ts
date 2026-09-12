@@ -1,6 +1,6 @@
 import type { HttpService } from '@nestjs/axios';
 import { BadGatewayException, ServiceUnavailableException } from '@nestjs/common';
-import { defer, of, throwError } from 'rxjs';
+import { defer, map, of, throwError, timer } from 'rxjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AppConfigService } from '../config/app-config.service.js';
 import { GeminiService } from './gemini.service.js';
@@ -112,5 +112,15 @@ describe('GeminiService', () => {
 
     await expect(service.analyze([])).rejects.toThrow(ServiceUnavailableException);
     expect(attempts).toBe(2);
+  }, 10000);
+
+  it('throws ServiceUnavailableException when the call exceeds the configured timeout', async () => {
+    httpService.post.mockReturnValue(timer(200).pipe(map(() => successResponse(validGeminiPayload))));
+    const service = new GeminiService(
+      httpService as unknown as HttpService,
+      makeAppConfig({ geminiTimeoutMs: 20, geminiMaxRetries: 0 }),
+    );
+
+    await expect(service.analyze([])).rejects.toThrow(ServiceUnavailableException);
   }, 10000);
 });

@@ -1,31 +1,18 @@
-import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { rateLimit } from 'express-rate-limit';
 import helmet from 'helmet';
 import { AppModule } from './app.module.js';
+import { AppConfigService } from './config/app-config.service.js';
 
 export async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule);
+  const appConfig = app.get(AppConfigService);
 
+  // Global rate limiting, the ValidationPipe and the exception filter are registered
+  // as Nest providers/middleware in AppModule so they're active in e2e tests too —
+  // helmet, CORS and Swagger stay here as process-level, bootstrap-only concerns.
   app.use(helmet());
-  app.use(
-    rateLimit({
-      windowMs: 15 * 60 * 1000,
-      limit: 100,
-      standardHeaders: true,
-      legacyHeaders: false,
-    }),
-  );
-  app.enableCors();
-
-  app.useGlobalPipes(
-    new ValidationPipe({
-      whitelist: true,
-      forbidNonWhitelisted: true,
-      transform: true,
-    }),
-  );
+  app.enableCors({ origin: appConfig.corsAllowedOrigins, credentials: true });
 
   const swaggerConfig = new DocumentBuilder()
     .setTitle('Guardian API')

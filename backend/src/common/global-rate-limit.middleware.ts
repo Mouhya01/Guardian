@@ -2,20 +2,20 @@ import { Injectable, NestMiddleware } from '@nestjs/common';
 import type { NextFunction, Request, Response } from 'express';
 import { rateLimit } from 'express-rate-limit';
 import { AppConfigService } from '../config/app-config.service.js';
-import { createRateLimitHandler } from '../common/rate-limit-response.util.js';
+import { createRateLimitHandler } from './rate-limit-response.util.js';
 
-/** Stricter limiter dedicated to /audit — each request triggers a paid, rate-limited Gemini call. */
+/** Baseline limiter applied to every route; /audit additionally gets its own, stricter limiter. */
 @Injectable()
-export class AuditRateLimitMiddleware implements NestMiddleware {
+export class GlobalRateLimitMiddleware implements NestMiddleware {
   private readonly limiter: ReturnType<typeof rateLimit>;
 
   constructor(appConfig: AppConfigService) {
     this.limiter = rateLimit({
-      windowMs: appConfig.auditRateLimitWindowMs,
-      limit: appConfig.auditRateLimitMaxRequests,
+      windowMs: appConfig.globalRateLimitWindowMs,
+      limit: appConfig.globalRateLimitMaxRequests,
       standardHeaders: true,
       legacyHeaders: false,
-      message: 'Too many audit requests. This endpoint is limited to protect the Gemini API quota — please retry later.',
+      message: 'Too many requests. Please try again later.',
       handler: createRateLimitHandler(),
     });
   }

@@ -1,8 +1,6 @@
 import { Controller, HttpCode, HttpStatus, Post, UploadedFiles, UseInterceptors } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { ApiBody, ApiConsumes, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { memoryStorage } from 'multer';
-import { AUDIT_MAX_FILES_PER_REQUEST, AUDIT_MAX_FILE_SIZE_BYTES } from './audit.constants.js';
 import { AuditService } from './audit.service.js';
 import { AuditReportDto } from './dto/audit-report.dto.js';
 
@@ -13,13 +11,9 @@ export class AuditController {
 
   @Post()
   @HttpCode(HttpStatus.OK)
-  @UseInterceptors(
-    FilesInterceptor('files', AUDIT_MAX_FILES_PER_REQUEST, {
-      // In-memory only — uploaded content is never written to disk.
-      storage: memoryStorage(),
-      limits: { fileSize: AUDIT_MAX_FILE_SIZE_BYTES, files: AUDIT_MAX_FILES_PER_REQUEST },
-    }),
-  )
+  // No local options here on purpose — they would override (not merge with) the
+  // storage/limits injected via MulterModule.registerAsync in AuditModule.
+  @UseInterceptors(FilesInterceptor('files'))
   @ApiOperation({
     summary: 'Run an AI-powered security audit over one or more uploaded files',
     description:
