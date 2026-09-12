@@ -1,0 +1,3 @@
+allowBuilds:
+  # Telemetry-only postinstall pulled in by swagger-ui-dist; no build output needed.
+  '@scarf/scarf': false
