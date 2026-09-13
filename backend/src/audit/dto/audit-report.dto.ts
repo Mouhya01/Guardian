@@ -5,6 +5,10 @@ import { AuditFindingDto } from './audit-finding.dto.js';
 import { RiskLevel } from './risk-level.enum.js';
 
 export class AuditReportDto {
+  @ApiProperty({ description: 'Persisted report id, usable with GET /audit/:id' })
+  @IsString()
+  id!: string;
+
   @ApiProperty({ description: 'High-level summary of the security posture across all analyzed files' })
   @IsString()
   @MaxLength(4000)

@@ -1,7 +1,9 @@
 import { MiddlewareConsumer, Module, type NestModule } from '@nestjs/common';
+import { MongooseModule } from '@nestjs/mongoose';
 import { MulterModule } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import { AppConfigService } from '../config/app-config.service.js';
+import { AuditReportEntity, AuditReportSchema } from '../database/schemas/audit-report.schema.js';
 import { GeminiModule } from '../gemini/gemini.module.js';
 import { AuditRateLimitMiddleware } from './audit-rate-limit.middleware.js';
 import { AuditController } from './audit.controller.js';
@@ -10,6 +12,7 @@ import { AuditService } from './audit.service.js';
 @Module({
   imports: [
     GeminiModule,
+    MongooseModule.forFeature([{ name: AuditReportEntity.name, schema: AuditReportSchema }]),
     // registerAsync (not a static object literal) so the limits are read from
     // AppConfigService via DI *after* ConfigModule has loaded .env — a plain
     // top-level `process.env.X` read here would run during ES module

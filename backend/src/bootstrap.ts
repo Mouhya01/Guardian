@@ -1,12 +1,23 @@
 import { NestFactory } from '@nestjs/core';
+import type { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { toNodeHandler } from 'better-auth/node';
 import helmet from 'helmet';
 import { AppModule } from './app.module.js';
+import { AUTH_INSTANCE } from './auth/auth.constants.js';
+import type { AuthInstance } from './auth/auth.instance.js';
 import { AppConfigService } from './config/app-config.service.js';
 
 export async function bootstrap(): Promise<void> {
-  const app = await NestFactory.create(AppModule);
+  // Body parsing is disabled here and re-added below, after the Better Auth
+  // handler is mounted — Better Auth needs the raw, unparsed request body.
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, { bodyParser: false });
   const appConfig = app.get(AppConfigService);
+  const auth = app.get<AuthInstance>(AUTH_INSTANCE);
+
+  app.use('/api/auth/{*splat}', toNodeHandler(auth));
+  app.useBodyParser('json');
+  app.useBodyParser('urlencoded', { extended: true });
 
   // Global rate limiting, the ValidationPipe and the exception filter are registered
   // as Nest providers/middleware in AppModule so they're active in e2e tests too —
@@ -17,10 +28,15 @@ export async function bootstrap(): Promise<void> {
   const swaggerConfig = new DocumentBuilder()
     .setTitle('Guardian API')
     .setDescription(
-      'AI-powered security auditing platform — vulnerability analysis, secret detection and remediation reporting.',
+      'AI-powered security auditing platform — vulnerability analysis, secret detection and remediation reporting. ' +
+        'Authentication (sign-up/sign-in/sign-out/session) is handled by Better Auth, mounted at /api/auth/* — ' +
+        'those routes are not shown below since they are not Nest-decorated controllers. ' +
+        'See https://better-auth.com for the endpoint reference; call POST /api/auth/sign-up/email and ' +
+        'POST /api/auth/sign-in/email with { email, password }, then send the returned session as ' +
+        '"Authorization: Bearer <token>" on protected routes below.',
     )
-    .setVersion('0.2.0')
-    .addTag('audit', 'Multi-file upload and Gemini-powered security analysis')
+    .setVersion('0.3.0')
+    .addTag('audit', 'Multi-file upload, Gemini-powered security analysis, and audit history')
     .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, swaggerConfig);
