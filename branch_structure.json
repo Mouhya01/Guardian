@@ -1,0 +1,15 @@
+{
+  "default_branch": "main",
+  "branches": [
+    "final-phase-backend",
+    "main"
+  ],
+  "parent": {
+    "final-phase-backend": "main",
+    "main": null
+  },
+  "order": [
+    "main",
+    "final-phase-backend"
+  ]
+}
