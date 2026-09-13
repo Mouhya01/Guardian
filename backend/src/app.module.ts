@@ -4,9 +4,11 @@ import { APP_FILTER, APP_PIPE } from '@nestjs/core';
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
 import { AuditModule } from './audit/audit.module.js';
+import { AuthModule } from './auth/auth.module.js';
 import { GlobalExceptionFilter } from './common/filters/global-exception.filter.js';
 import { GlobalRateLimitMiddleware } from './common/global-rate-limit.middleware.js';
 import { AppConfigModule } from './config/app-config.module.js';
+import { DatabaseModule } from './database/database.module.js';
 
 @Module({
   imports: [
@@ -15,6 +17,8 @@ import { AppConfigModule } from './config/app-config.module.js';
       envFilePath: '.env',
     }),
     AppConfigModule,
+    DatabaseModule,
+    AuthModule,
     AuditModule,
   ],
   controllers: [AppController],

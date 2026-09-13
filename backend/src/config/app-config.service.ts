@@ -74,4 +74,24 @@ export class AppConfigService {
       .map((origin) => origin.trim())
       .filter((origin) => origin.length > 0);
   }
+
+  get mongodbUri(): string | undefined {
+    const value = this.config.get<string>('MONGODB_URI');
+    return value && value.trim().length > 0 ? value.trim() : undefined;
+  }
+
+  get betterAuthSecret(): string | undefined {
+    const value = this.config.get<string>('BETTER_AUTH_SECRET');
+    return value && value.trim().length > 0 ? value.trim() : undefined;
+  }
+
+  /** This API's own base URL (used by Better Auth for cookie/callback construction) — not the frontend's origin. */
+  get betterAuthBaseUrl(): string {
+    const configured = this.config.get<string>('BETTER_AUTH_URL');
+    if (configured && configured.trim().length > 0) {
+      return configured.trim();
+    }
+    const port = this.config.get<string>('PORT') ?? '3000';
+    return `http://localhost:${port}`;
+  }
 }
